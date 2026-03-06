@@ -39,3 +39,10 @@ student_id INT,
 menu_item VARCHAR(100),
 vote_date DATE
 );
+
+CREATE TABLE food_waste_logs (
+log_id INT AUTO_INCREMENT PRIMARY KEY,
+menu_id INT,
+waste_quantity INT,
+log_date DATE
+);
