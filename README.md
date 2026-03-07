@@ -194,7 +194,7 @@ Wasteless
 ## 1. Clone Repository
 
 ```
-git clone https://github.com/YOUR_USERNAME/FoodPulse.git
+git clone https://github.com/devikapolavarapu/FoodPulse.git
 cd FoodPulse
 ```
 
@@ -297,7 +297,6 @@ Interests:
 
 * Software Engineering
 * Artificial Intelligence
-* Cybersecurity
 
 ---
 
