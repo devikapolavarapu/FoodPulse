@@ -1,16 +1,6 @@
--- =====================================================
--- DATABASE SETUP
--- Project: Wasteless / FoodPulse
--- Version: Extended Schema (Menu System + Poll System)
--- =====================================================
-
--- Create database
 CREATE DATABASE IF NOT EXISTS devika_db;
-USE devika_db;
 
--- =====================================================
--- STUDENTS TABLE
--- =====================================================
+USE devika_db;
 
 CREATE TABLE IF NOT EXISTS students (
 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -19,65 +9,61 @@ email VARCHAR(100),
 age INT
 );
 
--- =====================================================
--- MENUS TABLE
--- =====================================================
+INSERT INTO students (name,email,age)
+VALUES ('Devika','devika@email.com',21);
 
-CREATE TABLE IF NOT EXISTS menus (
+INSERT INTO students (name,email,age)
+VALUES ('Rahul','rahul@email.com',23);
+USE devika_db;
+SELECT * FROM students;
+CREATE TABLE menus (
 menu_id INT AUTO_INCREMENT PRIMARY KEY,
 menu_date DATE,
 breakfast VARCHAR(100),
 lunch VARCHAR(100),
 dinner VARCHAR(100)
 );
-
--- =====================================================
--- MENU VOTES TABLE
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS menu_votes (
+CREATE TABLE menu_votes (
 vote_id INT AUTO_INCREMENT PRIMARY KEY,
 student_id INT,
 menu_item VARCHAR(100),
 vote_date DATE
 );
-
--- =====================================================
--- FOOD WASTE LOGS TABLE
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS food_waste_logs (
+SHOW TABLES;
+CREATE TABLE food_waste_logs (
 log_id INT AUTO_INCREMENT PRIMARY KEY,
 menu_id INT,
 waste_quantity INT,
 log_date DATE
 );
-
--- =====================================================
--- SAMPLE STUDENTS
--- =====================================================
-
+SHOW TABLES;
 INSERT INTO students (name,email,age) VALUES
-('Devika','[devika@email.com](mailto:devika@email.com)',21),
-('Rahul','[rahul@email.com](mailto:rahul@email.com)',22),
-('Anita','[anita@email.com](mailto:anita@email.com)',20),
-('Arjun','[arjun@email.com](mailto:arjun@email.com)',21),
-('Priya','[priya@email.com](mailto:priya@email.com)',22);
-
--- =====================================================
--- SAMPLE MENUS
--- =====================================================
-
+('Devika','devika@email.com',21),
+('Rahul','rahul@email.com',22),
+('Anita','anita@email.com',20),
+('Arjun','arjun@email.com',21),
+('Priya','priya@email.com',22);
+SELECT * FROM students;
+INSERT INTO menus (menu_name) VALUES
+('Veg Biryani'),
+('Fried Rice'),
+('Paneer Curry'),
+('Dal Tadka'),
+('Masala Dosa');
+SELECT * FROM menus;
 INSERT INTO menus (menu_date, breakfast, lunch, dinner)
 VALUES
 ('2026-03-06','Idli','Veg Biryani','Chapati'),
 ('2026-03-07','Dosa','Fried Rice','Paneer Curry'),
 ('2026-03-08','Upma','Dal Tadka','Masala Dosa');
-
--- =====================================================
--- STUDENT MENU VOTES
--- =====================================================
-
+SELECT * FROM menus;
+INSERT INTO menu_votes (student_id, menu_id, vote_date) VALUES
+(1,1,CURDATE()),
+(2,1,CURDATE()),
+(3,2,CURDATE()),
+(4,1,CURDATE()),
+(5,3,CURDATE());
+DESCRIBE menu_votes;
 INSERT INTO menu_votes (student_id, menu_item, vote_date)
 VALUES
 (1,'Veg Biryani',CURDATE()),
@@ -85,98 +71,111 @@ VALUES
 (3,'Fried Rice',CURDATE()),
 (4,'Veg Biryani',CURDATE()),
 (5,'Dal Tadka',CURDATE());
-
--- =====================================================
--- FOOD WASTE LOGS
--- =====================================================
-
+SELECT * FROM menu_votes;
 INSERT INTO food_waste_logs (menu_id, waste_quantity, log_date)
 VALUES
 (1,4,CURDATE()),
 (2,2,CURDATE()),
 (3,6,CURDATE());
-
--- =====================================================
--- ANALYTICS QUERIES
--- =====================================================
-
--- Most voted dish
+SELECT * FROM food_waste_logs;
 SELECT menu_item, COUNT(*) AS total_votes
 FROM menu_votes
 GROUP BY menu_item
 ORDER BY total_votes DESC;
-
--- Waste analysis by menu date
 SELECT m.menu_date, SUM(w.waste_quantity) AS total_waste
 FROM food_waste_logs w
 JOIN menus m ON w.menu_id = m.menu_id
 GROUP BY m.menu_date
 ORDER BY total_waste DESC;
-
--- Vote vs Waste insight
-SELECT
-v.menu_item,
-COUNT(v.vote_id) AS total_votes,
-COALESCE(SUM(w.waste_quantity),0) AS total_waste
+SELECT 
+  v.menu_item,
+  COUNT(v.vote_id) AS total_votes,
+  COALESCE(SUM(w.waste_quantity),0) AS total_waste
 FROM menu_votes v
-LEFT JOIN menus m ON v.vote_date = m.menu_date
-LEFT JOIN food_waste_logs w ON m.menu_id = w.menu_id
+LEFT JOIN menus m 
+  ON v.vote_date = m.menu_date
+LEFT JOIN food_waste_logs w 
+  ON m.menu_id = w.menu_id
 GROUP BY v.menu_item
 ORDER BY total_votes DESC, total_waste ASC;
-
--- =====================================================
--- NEW FEATURE: POLL BASED VOTING SYSTEM
--- (Used by Spring Boot Backend APIs)
--- =====================================================
-
-CREATE TABLE IF NOT EXISTS polls (
-id INT AUTO_INCREMENT PRIMARY KEY,
-question VARCHAR(255),
-option1 VARCHAR(100),
-option2 VARCHAR(100),
-option3 VARCHAR(100),
-option4 VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS votes (
-id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE menu_votes (
+vote_id INT AUTO_INCREMENT PRIMARY KEY,
 student_id INT,
-poll_id INT,
-selected_option VARCHAR(255)
+menu_id INT,
+vote_date DATE,
+FOREIGN KEY (menu_id) REFERENCES menus(menu_id)
 );
+DROP TABLE menu_votes;
 
--- =====================================================
--- SAMPLE POLL
--- =====================================================
-
-INSERT INTO polls
-(question,option1,option2,option3,option4)
-VALUES
-(
-'Tomorrow Lunch Menu',
-'Biryani',
-'Veg Meals',
-'Chicken Curry',
-'Paneer Curry'
+CREATE TABLE menu_votes (
+vote_id INT AUTO_INCREMENT PRIMARY KEY,
+student_id INT,
+menu_id INT,
+vote_date DATE,
+FOREIGN KEY (menu_id) REFERENCES menus(menu_id)
 );
-
--- =====================================================
--- SAMPLE POLL VOTES
--- =====================================================
-
-INSERT INTO votes (student_id,poll_id,selected_option)
+INSERT INTO menu_votes (student_id, menu_id, vote_date)
 VALUES
-(1,1,'Biryani'),
-(2,1,'Veg Meals'),
-(3,1,'Veg Meals');
-
--- =====================================================
--- POLL RESULT ANALYTICS
--- =====================================================
-
-SELECT
-selected_option,
-COUNT(*) AS vote_count
-FROM votes
-WHERE poll_id = 1
-GROUP BY selected_option;
+(1,1,CURDATE()),
+(2,1,CURDATE()),
+(3,2,CURDATE()),
+(4,1,CURDATE()),
+(5,3,CURDATE());
+SELECT * FROM menu_votes;
+USE devika_db;
+CREATE TABLE students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password VARCHAR(100),
+    hostel VARCHAR(50)
+);
+SHOW TABLES;
+DESCRIBE students;
+DROP TABLE students;
+CREATE TABLE students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password VARCHAR(100),
+    hostel VARCHAR(50)
+);
+DESCRIBE students;
+CREATE TABLE polls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    question VARCHAR(255),
+    option1 VARCHAR(100),
+    option2 VARCHAR(100),
+    option3 VARCHAR(100),
+    option4 VARCHAR(100),
+    poll_date DATE
+);
+CREATE TABLE votes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    poll_id INT,
+    selected_option VARCHAR(50),
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (poll_id) REFERENCES polls(id)
+);
+SHOW TABLES;
+DESCRIBE votes;
+SELECT * FROM votes;
+SELECT * FROM students;
+SELECT * FROM polls;
+INSERT INTO students(name,email,password,hostel)
+VALUES ('Devika','devika@email.com','123','A-Block');
+SELECT * FROM students;
+SELECT * FROM votes;
+SELECT * FROM votes;
+SELECT * FROM students;
+SELECT * FROM polls;
+SELECT * FROM students;
+DESCRIBE votes;
+DELETE FROM votes WHERE student_id=1 AND poll_id=1;
+SELECT * FROM votes;
+INSERT INTO students(name,email,password,hostel)
+VALUES ('Rahul','rahul@email.com','123','A-block');
+INSERT INTO students(name,email,password,hostel)
+VALUES ('Anjali','anjali@email.com','123','B-block');
+SELECT * FROM students;
